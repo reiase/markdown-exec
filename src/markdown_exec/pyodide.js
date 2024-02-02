@@ -77,7 +77,7 @@ function updateTheme(editor, light, dark) {
     });
 }
 
-async function setupPyodide(idPrefix, install = null, themeLight = 'tomorrow', themeDark = 'tomorrow_night', session = null) {
+async function setupPyodide(idPrefix, install = null, themeLight = 'tomorrow', themeDark = 'tomorrow_night', session = null, execMode='ondemand') {
     const editor = ace.edit(idPrefix + "editor");
     const run = document.getElementById(idPrefix + "run");
     const clear = document.getElementById(idPrefix + "clear");
@@ -96,8 +96,13 @@ async function setupPyodide(idPrefix, install = null, themeLight = 'tomorrow', t
             await micropip.install(package);
     }
     clearOutput(output);
-    run.onclick = () => evaluatePython(pyodide, editor, output, session);
-    clear.onclick = () => clearOutput(output);
+    if (execMode.includes("onload")) {
+        evaluatePython(pyodide, editor, output, session);
+    }
+    if (execMode.includes("ondemand")) {
+        run.onclick = () => evaluatePython(pyodide, editor, output, session);
+        clear.onclick = () => clearOutput(output);
+    }
     output.parentElement.parentElement.addEventListener("keydown", (event) => {
         if (event.ctrlKey && event.key.toLowerCase() === 'enter') {
             event.preventDefault();

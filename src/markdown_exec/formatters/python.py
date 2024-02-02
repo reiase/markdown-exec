@@ -10,6 +10,7 @@ from typing import Any
 
 from markdown_exec.formatters.base import ExecutionError, base_format
 from markdown_exec.rendering import code_block
+from markdown_exec.formatters.pyodide import _format_pyodide
 
 _sessions_globals: dict[str, dict] = defaultdict(dict)
 _sessions_counter: dict[str | None, int] = defaultdict(int)
@@ -67,4 +68,7 @@ def _run_python(
 
 
 def _format_python(**kwargs: Any) -> str:
+    if "extra" in kwargs and "pyodide" in kwargs["extra"]:
+        if kwargs["extra"]["pyodide"] == "true":
+            return _format_pyodide(**kwargs)
     return base_format(language="python", run=_run_python, **kwargs)

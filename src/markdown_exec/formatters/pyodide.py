@@ -17,7 +17,7 @@ template = """
 <link title="light" rel="alternate stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs-themes@1.0.0/tomorrow.min.css" disabled="disabled">
 <link title="dark" rel="alternate stylesheet" href="https://cdn.jsdelivr.net/npm/highlightjs-themes@1.0.0/tomorrow-night-blue.min.css" disabled="disabled">
 
-<div class="pyodide">
+<div class="pyodide" style="%(style)s">
 <div class="pyodide-editor-bar">
 <span class="pyodide-bar-item">Editor (session: %(session)s)</span><span id="%(id_prefix)srun" title="Run: press Ctrl-Enter" class="pyodide-bar-item pyodide-clickable"><span class="twemoji">%(play_emoji)s</span> Run</span>
 </div>
@@ -30,13 +30,33 @@ template = """
 
 <script>
 document.addEventListener('DOMContentLoaded', (event) => {
-    setupPyodide('%(id_prefix)s', install=%(install)s, themeLight='%(theme_light)s', themeDark='%(theme_dark)s', session='%(session)s');
+    setupPyodide('%(id_prefix)s', install=%(install)s, themeLight='%(theme_light)s', themeDark='%(theme_dark)s', session='%(session)s', execMode='%(exec_mode)s');
 });
 </script>
 """
 
 _counter = 0
 
+def _get_exec_mode(**options: Any):
+    flags = []
+    if "ondemand" in options:
+        if options["ondemand"] == 'true':
+            flags.append("ondemand")
+        if options["ondemand"] == 'false':
+            flags.remove("ondemand")
+    else:
+        flags.append("ondemand")
+    if "onload" in options:
+        if options["onload"] == 'true':
+            flags.append("onload")
+        if options["onload"] == 'false':
+            flags.remove("onload")
+    return "|".join(flags)
+
+def _get_style(**options):
+    if "display" in options and options["display"] == "false":
+        return "display: none;"
+    return ""
 
 def _format_pyodide(code: str, md: Markdown, session: str, extra: dict, **options: Any) -> str:  # noqa: ARG001
     global _counter  # noqa: PLW0603
@@ -56,5 +76,7 @@ def _format_pyodide(code: str, md: Markdown, session: str, extra: dict, **option
         "session": session or "default",
         "play_emoji": play_emoji,
         "clear_emoji": clear_emoji,
+        "exec_mode": _get_exec_mode(**extra),
+        "style": _get_style(**extra),
     }
     return template % data

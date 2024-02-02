@@ -64,6 +64,7 @@ def validator(
         Success or not.
     """
     exec_value = _to_bool(inputs.pop("exec", "no"))
+    exec_value = exec_value or _to_bool(inputs.get("pyodide", "no"))
     if language not in {"tree", "pyodide"} and not exec_value:
         return False
     id_value = inputs.pop("id", "")
